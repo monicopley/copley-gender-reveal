@@ -6,7 +6,7 @@
   <style>
     /* Page-wide styling */
     body {
-      background-color: #f0f8ff; /* Very light blue, almost white */
+      background-color: #f0f8ff; /* very light blue, almost white */
       margin: 0;
       padding: 0;
       text-align: center;
@@ -46,7 +46,7 @@
     }
     /* Countdown text styling */
     .countdown {
-      font-size: 6rem;
+      font-size: 6rem; /* Large countdown numbers */
       color: red;
       display: none;
       margin-top: 1rem;
@@ -64,7 +64,7 @@
 
   <div class="countdown" id="countdown"></div>
 
-  <!-- Trumpet sound (make sure trumpet.mp3 is in the same folder) -->
+  <!-- Trumpet sound (ensure trumpet.mp3 is in the same folder) -->
   <audio id="trumpetSound" src="trumpet.mp3"></audio>
 
   <!-- Confetti library -->
@@ -74,21 +74,25 @@
     /* 
        Card states:
          Card #3 (state index 0):
-           - Overlay: "3"
-           - UnderCanvas: "What am I?" in maroon
-           - 70% threshold, then 3-2-1 countdown => switch to card #2.
+           - Overlay: displays "3".
+           - UnderCanvas: displays "What am I?" in maroon.
+           - Threshold: 70% scratched then a 3-2-1 countdown, then switch to Card #2.
+         
          Card #2 (state index 1):
-           - Overlay: "2"
-           - UnderCanvas: "Wait for it\u00A0..." with "Wait for it" in maroon and ellipses in light blue.
-           - 70% threshold, then 3-2-1 countdown => switch to card #1.
-         Card #1 (state index 2):
-           - Overlay: "1"
-           - UnderCanvas: "I'm a GIRL!" in pink
-           - 5% threshold triggers immediate confetti and trumpet (no countdown).
-       Common:
-         - UnderCanvas background is beige (#F5F5DC).
-         - Scratch stroke (line) width = 50.
-         - Reveal text is bold 40px sans-serif; Overlay number is bold 120px sans-serif.
+           - Overlay: displays "2".
+           - UnderCanvas: displays "Wait for it" in maroon followed by the ellipses (with a preceding non-breaking space) in light blue.
+           - Threshold: 70% scratched then a 3-2-1 countdown, then switch to Card #1.
+         
+         Card #1 (state index 2 - Final Card):
+           - Overlay: displays "1".
+           - UnderCanvas: displays "I'm a GIRL! 🎀" in pink.
+           - Threshold: when 5% is scratched, trigger confetti and trumpet immediately. Do not clear the overlay so that the scratched appearance remains.
+         
+         Common:
+           - UnderCanvas background is beige (#F5F5DC).
+           - Scratch stroke (line) width is 50.
+           - Reveal text is drawn in bold 40px sans-serif.
+           - Overlay number is drawn in bold 120px sans-serif.
     */
 
     const states = [
@@ -99,14 +103,14 @@
       },
       {
         numberText: "2",
-        revealText: "Wait for it...",
-        ellipsesText: "\u00A0...", // non-breaking space then ellipses
+        revealText: "Wait for it",  // Note: no ellipses included here.
+        ellipsesText: "\u00A0...",  // non-breaking space then ellipses.
         revealColor: "maroon",
         ellipsesColor: "lightblue"
       },
       {
         numberText: "1",
-        revealText: "I'm a GIRL!",
+        revealText: "I'm a GIRL! 🎀", // Bow emoji appended.
         revealColor: "pink"
       }
     ];
@@ -126,7 +130,7 @@
     let isScratching = false;
     let lastX = 0;
     let lastY = 0;
-    let cardCleared = false; // Ensures each card is triggered only once.
+    let cardCleared = false; // Ensures each card's threshold triggers only once.
   
     // Initialize the first card (Card #3).
     initCard(0);
@@ -180,7 +184,7 @@
     }, { passive: false });
   
     /**
-     * Initialize the card for a given state index.
+     * Initialize a card for the given state index.
      */
     function initCard(stateIndex) {
       currentStateIndex = stateIndex;
@@ -193,20 +197,19 @@
   
     /**
      * Draw the underCanvas:
-     * - Fill with beige (#F5F5DC)
-     * - Draw the reveal text using bold 40px sans-serif.
-     * For Card #2, "Wait for it" is in maroon and the ellipses in light blue.
+     * - Fill with beige (#F5F5DC).
+     * - Draw the reveal text in bold 40px sans-serif.
+     *   For Card #2, draw "Wait for it" in maroon and then the ellipses in light blue.
      */
     function drawUnderCanvas(state) {
       underCtx.fillStyle = "#F5F5DC"; // Beige background.
       underCtx.fillRect(0, 0, canvasWidth, canvasHeight);
-  
       underCtx.textAlign = "center";
       underCtx.textBaseline = "middle";
       underCtx.font = "bold 40px sans-serif";
   
       if (currentStateIndex === 1) {
-        // Card #2.
+        // Card #2: "Wait for it" + ellipses.
         underCtx.fillStyle = state.revealColor;
         const mainText = state.revealText;
         const measure = underCtx.measureText(mainText);
@@ -215,6 +218,7 @@
         underCtx.fillStyle = state.ellipsesColor;
         underCtx.fillText(state.ellipsesText, offsetX + measure.width, canvasHeight / 2);
       } else {
+        // Card #3 or Card #1.
         underCtx.fillStyle = state.revealColor;
         underCtx.fillText(state.revealText, canvasWidth / 2, canvasHeight / 2);
       }
@@ -222,14 +226,13 @@
   
     /**
      * Draw the overlay canvas:
-     * - Fill with light grey.
-     * - Draw the large number using bold 120px sans-serif.
+     * - Fill with light grey (fully opaque).
+     * - Draw the large number in bold 120px sans-serif.
      */
     function drawOverlay(state) {
       overlayCtx.globalCompositeOperation = "source-over";
-      overlayCtx.fillStyle = "rgba(211,211,211,1)"; // Light grey, fully opaque.
+      overlayCtx.fillStyle = "rgba(211,211,211,1)"; // Light grey.
       overlayCtx.fillRect(0, 0, canvasWidth, canvasHeight);
-  
       overlayCtx.textAlign = "center";
       overlayCtx.textBaseline = "middle";
       overlayCtx.font = "bold 120px sans-serif";
@@ -258,43 +261,41 @@
   
     /**
      * Check the percentage of the overlay that has been scratched off.
-     * - For Card #3 and Card #2, the threshold is 70%.
-     * - For the final card (Card #1), the threshold is 5%.
-     * When the threshold is met:
-     *   • For non-final cards, start a countdown to move to the next card.
-     *   • For the final card, immediately trigger confetti and play the trumpet.
+     * - For Cards #3 and #2, the threshold is 70%.
+     * - For the final card (Card #1, state index 2), the threshold is 5%.
+     * For non-final cards, clear the overlay and then start a countdown.
+     * For the final card, do NOT clear the overlay (leave the scratch as is) and immediately launch confetti and play the trumpet.
      */
     function checkScratchProgress() {
       if (cardCleared) return;
       const imgData = overlayCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
-      let transparentPixels = 0;
+      let transparentCount = 0;
       for (let i = 3; i < imgData.length; i += 4) {
-        if (imgData[i] === 0) transparentPixels++;
+        if (imgData[i] === 0) transparentCount++;
       }
       const totalPixels = canvasWidth * canvasHeight;
-      const percentCleared = (transparentPixels / totalPixels) * 100;
+      const percentCleared = (transparentCount / totalPixels) * 100;
   
-      // Debug: Uncomment the next line to log the percentage.
-      // console.log("Current state:", currentStateIndex, "Percent cleared:", percentCleared);
-  
-      // Use 30% threshold for final card (state index 2); 60% for others.
-      const threshold = (currentStateIndex === 2) ? 30 : 60;
+      // Set threshold: 5% for final card, 70% for others.
+      const threshold = (currentStateIndex === 2) ? 5 : 70;
+      // Debug log (uncomment if needed):
+      // console.log("State:", currentStateIndex, "Percent cleared:", percentCleared);
       if (percentCleared >= threshold) {
         cardCleared = true;
-        overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-        if (currentStateIndex === 2) {
-          // Final card: trigger confetti and trumpet immediately.
+        if (currentStateIndex !== 2) {
+          // For Card #3 and Card #2, clear the overlay then start countdown.
+          overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+          setTimeout(startCountdownAndNext, 500);
+        } else {
+          // Final card: do NOT clear overlay; immediately launch confetti and play trumpet.
           launchConfetti();
           trumpetSound.play();
-        } else {
-          // Non-final cards: after a 200ms delay, start the 3-2-1 countdown.
-          setTimeout(startCountdownAndNext, 500);
         }
       }
     }
   
     /**
-     * Start a 3-2-1 countdown, then switch to the next card.
+     * Start a 3-2-1 countdown then switch to the next card.
      */
     function startCountdownAndNext() {
       countdownEl.style.display = "block";
@@ -312,7 +313,7 @@
     }
   
     /**
-     * Launch confetti across the screen for 5 seconds.
+     * Launch confetti across the screen for about 5 seconds.
      */
     function launchConfetti() {
       const endTime = Date.now() + 5000;
