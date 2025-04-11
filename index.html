@@ -71,31 +71,31 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
 
   <script>
-    /* 
-       Card States:
+    /*
+       CARD STATES:
 
        Card #3 (state index 0):
-         - Overlay: displays "3".
-         - UnderCanvas: displays "What am I?" in maroon on a beige background.
-         - 70% threshold → 3-2-1 countdown → switch to Card #2.
+         - Overlay shows "3".
+         - UnderCanvas shows "What am I?" (maroon) on a beige background.
+         - 70% threshold triggers a 3-2-1 countdown before switching to Card #2.
 
        Card #2 (state index 1):
-         - Overlay: displays "2".
-         - UnderCanvas: displays "Wait for it..." where "Wait for it" is in maroon and the ellipses (i.e. "...") are in light blue.
-         - 70% threshold → 3-2-1 countdown → switch to Card #1.
+         - Overlay shows "2".
+         - UnderCanvas shows "Wait for it..." where "Wait for it" is in maroon and the ellipses ("...") are in light blue.
+         - 70% threshold triggers a 3-2-1 countdown before switching to Card #1.
 
        Card #1 (state index 2, Final Card):
-         - Overlay: displays "1".
-         - UnderCanvas: displays "I'm a GIRL! 🎀" in pink.
-         - 5% threshold triggers immediate confetti and trumpet sound (without clearing the overlay).
+         - Overlay shows "1".
+         - UnderCanvas shows "I'm a GIRL! 🎀" (with bow emoji) in pink.
+         - 5% threshold triggers confetti and trumpet immediately without clearing the overlay.
 
        Common:
-         - UnderCanvas background is beige (#F5F5DC).
-         - Scratch stroke (line) width = 50.
-         - Underlying reveal text is drawn in bold 40px sans-serif.
-         - Overlay number is drawn in bold 120px sans-serif.
+         - UnderCanvas background: beige (#F5F5DC).
+         - Scratch stroke (line) width: 50.
+         - Underlying reveal text: bold 40px sans-serif.
+         - Overlay number: bold 120px sans-serif.
     */
-
+  
     const states = [
       {
         numberText: "3",
@@ -105,7 +105,7 @@
       {
         numberText: "2",
         revealText: "Wait for it",
-        ellipsesText: "...", // now just "..." with no non-breaking space
+        ellipsesText: "...", // just three periods
         revealColor: "maroon",
         ellipsesColor: "lightblue"
       },
@@ -116,7 +116,7 @@
       }
     ];
   
-    // Get DOM elements and contexts.
+    // Get DOM elements and canvas contexts.
     const underCanvas = document.getElementById("underCanvas");
     const underCtx = underCanvas.getContext("2d");
     const overlayCanvas = document.getElementById("overlayCanvas");
@@ -160,7 +160,7 @@
       checkScratchProgress();
     });
   
-    // --- Touch Events ---
+    // --- Touch Events for Mobile (if needed) ---
     overlayCanvas.addEventListener("touchstart", (e) => {
       isScratching = true;
       const rect = overlayCanvas.getBoundingClientRect();
@@ -185,7 +185,7 @@
     }, { passive: false });
   
     /**
-     * Initialize a card based on the given state index.
+     * Initialize a card for the given state index.
      */
     function initCard(stateIndex) {
       currentStateIndex = stateIndex;
@@ -198,26 +198,28 @@
   
     /**
      * Draw the underCanvas:
-     * - Fill with beige (#F5F5DC).
-     * - Draw the reveal text in bold 40px sans-serif.
-     *   For Card #2, "Wait for it" in maroon plus "..." in light blue.
+     * - Fill the background with beige (#F5F5DC).
+     * - For Card #2, precisely center the combined text "Wait for it..." by measuring the main text and ellipses separately.
+     * - For Cards #3 and #1, center the text normally.
      */
     function drawUnderCanvas(state) {
       underCtx.fillStyle = "#F5F5DC"; // Beige background.
       underCtx.fillRect(0, 0, canvasWidth, canvasHeight);
   
-      underCtx.textBaseline = "middle";
       underCtx.font = "bold 40px sans-serif";
+      underCtx.textBaseline = "middle";
   
       if (currentStateIndex === 1) {
-        // For Card #2: center the combined text "Wait for it..." where the first part is maroon and ellipses in light blue.
-        const mainText = state.revealText; // "Wait for it"
-        const ellipses = state.ellipsesText; // "..."
-  
-        // Measure full combined width and then draw them starting from left aligned so they're centered.
+        // Card #2:
+        const mainText = state.revealText;   // "Wait for it"
+        const ellipses = state.ellipsesText;    // "..."
+        // Set text alignment to left to measure widths.
         underCtx.textAlign = "left";
-        const measureFull = underCtx.measureText(mainText + ellipses);
-        const startX = (canvasWidth - measureFull.width) / 2;
+        const measureMain = underCtx.measureText(mainText);
+        const measureEllipses = underCtx.measureText(ellipses);
+        const totalWidth = measureMain.width + measureEllipses.width;
+        // Calculate starting X so that the full string is centered.
+        const startX = (canvasWidth - totalWidth) / 2;
         const centerY = canvasHeight / 2;
   
         // Draw main text in maroon.
@@ -225,11 +227,13 @@
         underCtx.fillText(mainText, startX, centerY);
   
         // Draw ellipses in light blue.
-        const measureMain = underCtx.measureText(mainText);
         underCtx.fillStyle = state.ellipsesColor;
         underCtx.fillText(ellipses, startX + measureMain.width, centerY);
+  
+        // Restore textAlign (if needed later).
+        underCtx.textAlign = "center";
       } else {
-        // For Card #3 and Card #1.
+        // For Cards #3 and #1.
         underCtx.textAlign = "center";
         underCtx.fillStyle = state.revealColor;
         underCtx.fillText(state.revealText, canvasWidth / 2, canvasHeight / 2);
@@ -238,25 +242,25 @@
   
     /**
      * Draw the overlay canvas:
-     * - Fill with a light grey (opaque).
-     * - Draw the large number (state.numberText) in bold 120px sans-serif.
+     * - Fill with a fully opaque light grey.
+     * - Draw the large number using bold 120px sans-serif.
      */
     function drawOverlay(state) {
       overlayCtx.globalCompositeOperation = "source-over";
       overlayCtx.fillStyle = "rgba(211,211,211,1)"; // Light grey.
       overlayCtx.fillRect(0, 0, canvasWidth, canvasHeight);
   
+      overlayCtx.font = "bold 120px sans-serif";
       overlayCtx.textAlign = "center";
       overlayCtx.textBaseline = "middle";
-      overlayCtx.font = "bold 120px sans-serif";
       overlayCtx.fillStyle = "black";
       overlayCtx.fillText(state.numberText, canvasWidth / 2, canvasHeight / 2);
     }
   
     /**
-     * Scratch a line from (lastX, lastY) to (x,y) using destination-out.
+     * Draw a scratch line from (lastX, lastY) to (x,y) using destination-out.
      * Uses a line width of 50.
-     * After each stroke, check the scratch progress.
+     * After drawing, schedule a check of scratch progress.
      */
     function scratchLine(x, y) {
       overlayCtx.globalCompositeOperation = "destination-out";
@@ -274,36 +278,35 @@
   
     /**
      * Check if a sufficient percentage of the overlay has been scratched off.
-     * - For Card #3 and Card #2, threshold is 70%.
-     * - For the final Card (#1), threshold is 5%.
-     * When threshold is met:
+     * - For Cards #3 and #2, the threshold is 70%.
+     * - For Card #1 (final), the threshold is 5%.
+     * If the threshold is met:
      *   • For non-final cards, clear the overlay and start a countdown.
-     *   • For the final card, do NOT clear the overlay (so the scratch remains) and immediately launch confetti and play the trumpet.
+     *   • For the final card, do not clear the overlay; immediately launch confetti and play the trumpet.
      */
     function checkScratchProgress() {
       if (cardCleared) return;
       const imgData = overlayCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
-      let transparentCount = 0;
+      let transparentPixels = 0;
       for (let i = 3; i < imgData.length; i += 4) {
-        if (imgData[i] === 0) transparentCount++;
+        if (imgData[i] === 0) transparentPixels++;
       }
       const totalPixels = canvasWidth * canvasHeight;
-      const percentCleared = (transparentCount / totalPixels) * 100;
+      const percentCleared = (transparentPixels / totalPixels) * 100;
   
-      // Use 5% threshold for final card (state index 2), 70% for others.
+      // Set threshold: for final card (state index 2) 5%, otherwise 70%.
       const threshold = (currentStateIndex === 2) ? 5 : 70;
-  
-      // Debug: Uncomment the line below to log the scratch percentage.
+      // Uncomment for debugging:
       // console.log("State:", currentStateIndex, "Percent cleared:", percentCleared.toFixed(1) + "%");
-  
       if (percentCleared >= threshold) {
         cardCleared = true;
         if (currentStateIndex !== 2) {
-          // For Card #3 and Card #2, clear the overlay and start a 3-2-1 countdown.
+          // For Cards #3 and #2: Clear the overlay and start a countdown.
           overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
           setTimeout(startCountdownAndNext, 500);
         } else {
-          // For the final card, do NOT clear the overlay; launch confetti and play trumpet immediately.
+          // For the final card: leave the overlay as is (so the scratch marks remain)
+          // and immediately launch confetti and play trumpet.
           launchConfetti();
           trumpetSound.play();
         }
@@ -311,7 +314,7 @@
     }
   
     /**
-     * Start a 3-2-1 countdown then switch to the next card.
+     * Start a 3-2-1 countdown, then switch to the next card.
      */
     function startCountdownAndNext() {
       countdownEl.style.display = "block";
