@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gender Reveal Scratch Card</title>
+  <style>
+    body {
+      background: #fff8f9;
+      font-family: 'Georgia', serif;
+      text-align: center;
+      padding: 2em;
+      color: #d63384;
+    }
+    h1 {
+      font-size: 2.5em;
+      color: gold;
+    }
+    .instruction {
+      font-size: 1.5em;
+      color: #d63384;
+      margin-bottom: 2em;
+    }
+    canvas {
+      cursor: crosshair;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Our Gender Reveal!</h1>
+  <p class="instruction">Scratch below to reveal the surprise!</p>
+
+  <canvas id="scratchCanvas" width="350" height="200"></canvas>
+
+  <script>
+    const canvas = document.getElementById('scratchCanvas');
+    const ctx = canvas.getContext('2d');
+    const hiddenText = 'It\'s a girl!';
+
+    const drawText = () => {
+      ctx.fillStyle = '#d63384';
+      ctx.font = 'bold 28px Georgia';
+      ctx.textAlign = 'center';
+      ctx.fillText(hiddenText, canvas.width / 2, canvas.height / 2 + 10);
+    }
+
+    const drawOverlay = () => {
+      ctx.fillStyle = '#ccc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    const scratch = (x, y) => {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    let isDrawing = false;
+
+    canvas.addEventListener('mousedown', (e) => {
+      isDrawing = true;
+      scratch(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', (e) => {
+      if (isDrawing) scratch(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      isDrawing = false;
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      isDrawing = false;
+    });
+
+    drawText();
+    ctx.globalCompositeOperation = 'source-over';
+    drawOverlay();
+  </script>
+</body>
+</html>
