@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;meta charset="UTF-8" /&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;title&gt;Gender Reveal Scratch Card&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* Basic styling */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>body {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>background-color: #f0f8ff; /* Very light blue */</p>
+<p class="p1"><span class="Apple-converted-space">      </span>margin: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>padding: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>font-family: sans-serif;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>text-align: center;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>h1 {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>color: teal;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>font-size: 3rem;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>margin-top: 1.5rem;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>h2 {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>color: #555;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>font-size: 1.5rem;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 2rem;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* The scratch card container, 400×250 for clarity */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>#scratchCardContainer {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>position: relative;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>width: 400px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>height: 250px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>margin: 0 auto;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>border: 2px solid #000;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>box-sizing: border-box;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>margin-bottom: 2rem;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* The text is behind the canvas, so users scratch away the canvas to see it */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>#revealText {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>position: absolute;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>top: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>left: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>z-index: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>display: flex;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>justify-content: center;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>align-items: center;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>font-weight: bold;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>font-size: 30px;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>color: #d63384;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>background-color: #fff8f9;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* Canvas is on top, forming the scratchable overlay */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>#scratchCanvas {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>position: absolute;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>top: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>left: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>z-index: 1;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>cursor: crosshair;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>border-radius: 8px;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/* Confetti canvas for final celebration */</p>
+<p class="p1"><span class="Apple-converted-space">    </span>#confettiCanvas {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>position: fixed;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>top: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>left: 0;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>width: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>height: 100%;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>pointer-events: none;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>z-index: 999;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;h1&gt;Welcome to Our Gender Reveal!&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;h2&gt;Scratch the card to reveal the surprise!&lt;/h2&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- Container holds reveal text behind, and the scratchable canvas on top --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;div id="scratchCardContainer"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="revealText"&gt;1. What am I?&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;canvas id="scratchCanvas" width="400" height="250"&gt;&lt;/canvas&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- Confetti canvas --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;canvas id="confettiCanvas"&gt;&lt;/canvas&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>console.log("Script is running. DOM loaded.");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Messages to reveal in sequence</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const messages = [</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"1. What am I?",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"2. Wait for it...",</p>
+<p class="p1"><span class="Apple-converted-space">      </span>"3. I'm a GIRL! 🎀"</p>
+<p class="p1"><span class="Apple-converted-space">    </span>];</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let currentIndex = 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Grab references</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const revealText = document.getElementById("revealText");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const scratchCanvas = document.getElementById("scratchCanvas");</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const scratchCtx = scratchCanvas.getContext("2d");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// For scratch logic</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let isDrawing = false;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Setup the first card</p>
+<p class="p1"><span class="Apple-converted-space">    </span>setupCard(currentIndex);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Listen for mouse events</p>
+<p class="p1"><span class="Apple-converted-space">    </span>scratchCanvas.addEventListener("mousedown", (e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.log("mousedown at offsetX:", e.offsetX, "offsetY:", e.offsetY);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>isDrawing = true;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratch(e.offsetX, e.offsetY);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>scratchCanvas.addEventListener("mousemove", (e) =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (!isDrawing) return;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratch(e.offsetX, e.offsetY);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>scratchCanvas.addEventListener("mouseup", () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.log("mouseup");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>isDrawing = false;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>checkScratchProgress();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>scratchCanvas.addEventListener("mouseleave", () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>isDrawing = false;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// If you need touch events, you can add them similarly:</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// scratchCanvas.addEventListener("touchstart", ...);</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/**</p>
+<p class="p1"><span class="Apple-converted-space">     </span>* Fill the overlay with grey, set the reveal text.</p>
+<p class="p1"><span class="Apple-converted-space">     </span>*/</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function setupCard(index) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.log("Setting up card index:", index, "with message:", messages[index]);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>revealText.innerText = messages[index];</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.globalCompositeOperation = "source-over";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.fillStyle = "#ccc";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/**</p>
+<p class="p1"><span class="Apple-converted-space">     </span>* Scratch a circular area at (x,y).</p>
+<p class="p1"><span class="Apple-converted-space">     </span>*/</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function scratch(x, y) {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.globalCompositeOperation = "destination-out";</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.beginPath();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.arc(x, y, 20, 0, Math.PI * 2);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.fill();</p>
+<p class="p1"><span class="Apple-converted-space">      </span>scratchCtx.closePath();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/**</p>
+<p class="p1"><span class="Apple-converted-space">     </span>* Checks how much of the overlay is cleared. If &gt;80%, move to next or celebrate.</p>
+<p class="p1"><span class="Apple-converted-space">     </span>*/</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function checkScratchProgress() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.log("Checking scratch progress...");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const imgData = scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const data = imgData.data;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>let clearedCount = 0;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// Check alpha channel</p>
+<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 3; i &lt; data.length; i += 4) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (data[i] &lt; 128) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>clearedCount++;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const totalPixels = scratchCanvas.width * scratchCanvas.height;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const percentCleared = (clearedCount / totalPixels) * 100;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.log("Percent cleared:", percentCleared.toFixed(1), "%");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>// If more than 80% cleared, go to next</p>
+<p class="p1"><span class="Apple-converted-space">      </span>if (percentCleared &gt; 80) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>console.log("More than 80% cleared.");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (currentIndex &lt; messages.length - 1) {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>currentIndex++;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>setupCard(currentIndex);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>launchConfetti();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>/**</p>
+<p class="p1"><span class="Apple-converted-space">     </span>* Simple confetti logic using an extra canvas.</p>
+<p class="p1"><span class="Apple-converted-space">     </span>*/</p>
+<p class="p1"><span class="Apple-converted-space">    </span>function launchConfetti() {</p>
+<p class="p1"><span class="Apple-converted-space">      </span>console.log("Launching confetti for final reveal!");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const confettiCanvas = document.getElementById("confettiCanvas");</p>
+<p class="p1"><span class="Apple-converted-space">      </span>const confettiCtx = confettiCanvas.getContext("2d");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>confettiCanvas.width = window.innerWidth;</p>
+<p class="p1"><span class="Apple-converted-space">      </span>confettiCanvas.height = window.innerHeight;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>const pieces = [];</p>
+<p class="p1"><span class="Apple-converted-space">      </span>for (let i = 0; i &lt; 150; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pieces.push({</p>
+<p class="p1"><span class="Apple-converted-space">          </span>x: Math.random() * window.innerWidth,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>y: Math.random() * window.innerHeight - window.innerHeight,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>r: Math.random() * 6 + 4,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>d: Math.random() * 30 + 10,</p>
+<p class="p1"><span class="Apple-converted-space">          </span>color: `hsl(${Math.random() * 360}, 70%, 60%)`</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function drawConfetti() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pieces.forEach(p =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>confettiCtx.beginPath();</p>
+<p class="p1"><span class="Apple-converted-space">          </span>confettiCtx.fillStyle = p.color;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>confettiCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>confettiCtx.fill();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>updateConfetti();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>requestAnimationFrame(drawConfetti);</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>function updateConfetti() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>pieces.forEach(p =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">          </span>p.y += Math.cos(p.d) + 1; // Move confetti</p>
+<p class="p1"><span class="Apple-converted-space">          </span>p.x += Math.sin(p.d);</p>
+<p class="p1"><span class="Apple-converted-space">          </span>if (p.y &gt; window.innerHeight) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Recycle confetti piece</p>
+<p class="p1"><span class="Apple-converted-space">            </span>p.y = -10;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>p.x = Math.random() * window.innerWidth;</p>
+<p class="p1"><span class="Apple-converted-space">          </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">      </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">      </span>drawConfetti();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">  </span>&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
