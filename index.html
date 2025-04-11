@@ -69,6 +69,16 @@
       z-index: 1000;
       display: none;
     }
+    .number-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 64px;
+      font-weight: bold;
+      color: black;
+      z-index: 4;
+    }
   </style>
 </head>
 <body>
@@ -94,7 +104,6 @@
     const trumpet = document.getElementById('trumpet-sound');
 
     const messages = ["1", "2", "3"];
-
     const reveals = [
       "<span style='color:teal;'>What am I?</span>",
       "<span style='color:teal;'>Wait for it...</span>",
@@ -105,21 +114,13 @@
     let revealed = false;
 
     function setupCard(index) {
-      textDisplay.style.color = 'black';
       textDisplay.innerHTML = '';
       const numberOverlay = document.createElement('div');
       numberOverlay.textContent = messages[index];
-      numberOverlay.style.position = 'absolute';
-      numberOverlay.style.top = '50%';
-      numberOverlay.style.left = '50%';
-      numberOverlay.style.transform = 'translate(-50%, -50%)';
-      numberOverlay.style.fontSize = '64px';
-      numberOverlay.style.fontWeight = 'bold';
-      numberOverlay.style.color = 'black';
-      numberOverlay.style.zIndex = '1';
-      numberOverlay.id = 'card-number';
+      numberOverlay.className = 'number-overlay';
+      const existingOverlay = document.querySelector('.number-overlay');
+      if (existingOverlay) existingOverlay.remove();
       document.querySelector('.scratch-card').appendChild(numberOverlay);
-
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#ccc';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -154,9 +155,8 @@
       if (percentCleared > 80) {
         revealed = true;
         textDisplay.innerHTML = reveals[currentIndex];
-        const existingNumber = document.getElementById('card-number');
-        if (existingNumber) existingNumber.remove();
-
+        const numberOverlay = document.querySelector('.number-overlay');
+        if (numberOverlay) numberOverlay.remove();
         if (currentIndex === messages.length - 1) {
           launchConfetti();
           trumpet.play();
@@ -164,6 +164,14 @@
           setTimeout(showCountdownAndNextCard, 2000);
         }
       }
+    }
+
+    function scratch(x, y) {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+      setTimeout(checkScratchProgress, 300);
     }
 
     let isDrawing = false;
@@ -176,14 +184,6 @@
     });
     canvas.addEventListener('mouseup', () => { isDrawing = false; });
     canvas.addEventListener('mouseleave', () => { isDrawing = false; });
-
-    function scratch(x, y) {
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.beginPath();
-      ctx.arc(x, y, 20, 0, Math.PI * 2);
-      ctx.fill();
-      setTimeout(checkScratchProgress, 300);
-    }
 
     function launchConfetti() {
       const canvas = document.getElementById('confetti-canvas');
