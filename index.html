@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,109 +22,151 @@
       font-size: 1.5em;
       margin-bottom: 2em;
     }
+    .card-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
     .scratch-card {
       position: relative;
       width: 400px;
       height: 250px;
-      margin: 0 auto 2em;
       background: #ccc;
-      font-size: 2em;
-      font-weight: bold;
-      color: black;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    .reveal-text {
-      display: none;
-      font-size: 2em;
-      font-weight: bold;
-    }
-    .countdown {
-      font-size: 4em;
-      display: none;
-      color: teal;
       margin-bottom: 1em;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .confetti {
-      position: fixed;
-      width: 100%;
-      height: 100%;
+    canvas {
+      position: absolute;
       top: 0;
       left: 0;
-      pointer-events: none;
-      z-index: 1000;
     }
+    .reveal-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 2em;
+      z-index: 1;
+    }
+    .countdown {
+      font-size: 5em;
+      color: teal;
+      display: none;
+    }
+    .hidden { display: none; }
+    .pink { color: #d63384; }
   </style>
 </head>
 <body>
   <h1>Welcome to Our Gender Reveal!</h1>
   <div class="instruction">Scratch the card to reveal the surprise!</div>
   <div class="countdown" id="countdown">3</div>
-  <div class="scratch-card" id="card">1</div>
-  <div class="reveal-text" id="reveal"></div>
-  <canvas class="confetti" id="confetti"></canvas>
-  <audio id="trumpet" src="https://upload.wikimedia.org/wikipedia/commons/1/15/Trumpet.mp3"></audio>
+  <div class="card-container">
+    <div class="scratch-card" id="card">
+      <div class="reveal-text" id="revealText"><span id="text">1</span></div>
+      <canvas id="scratchCanvas" width="400" height="250"></canvas>
+    </div>
+  </div>
   <script>
-    let card = document.getElementById('card');
-    let reveal = document.getElementById('reveal');
-    let countdown = document.getElementById('countdown');
-    let trumpet = document.getElementById('trumpet');
-    let confettiCanvas = document.getElementById('confetti');
-    let ctx = confettiCanvas.getContext('2d');
-    let phrases = ["What am I?", "Wait for it...", "I'm a <span style='color:pink'>girl</span>!"];
+    const texts = ["1", "2", "I'm a <span class='pink'>girl!</span> 🎀"];
+    const colors = ["teal", "teal", "teal"];
     let current = 0;
-    let isScratched = false;
+    let scratched = false;
+    let confettiStarted = false;
 
-    function resizeCanvas() {
-      confettiCanvas.width = window.innerWidth;
-      confettiCanvas.height = window.innerHeight;
+    const canvas = document.getElementById("scratchCanvas");
+    const ctx = canvas.getContext("2d");
+    const revealText = document.getElementById("revealText");
+    const textSpan = document.getElementById("text");
+    const countdown = document.getElementById("countdown");
+
+    const card = document.getElementById("card");
+
+    function setCard(index) {
+      revealText.innerHTML = `<span id="text" style="color:${colors[index]}">${texts[index]}</span>`;
+      ctx.fillStyle = "#ccc";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      scratched = false;
     }
 
-    function startConfetti() {
-      resizeCanvas();
-      for (let i = 0; i < 100; i++) {
-        ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 70%)`;
-        ctx.beginPath();
-        ctx.arc(Math.random() * confettiCanvas.width, Math.random() * confettiCanvas.height, 5, 0, 2 * Math.PI);
-        ctx.fill();
-      }
-    }
-
-    function triggerScratch() {
-      if (isScratched) return;
-      isScratched = true;
-      card.style.display = "none";
-      reveal.innerHTML = phrases[current];
-      reveal.style.display = "block";
-
-      if (current === 2) {
-        startConfetti();
-        trumpet.play();
-      }
-
-      if (current < phrases.length - 1) {
-        let count = 3;
-        countdown.innerText = count;
-        countdown.style.display = "block";
-        let interval = setInterval(() => {
-          count--;
+    function showCountdown(callback) {
+      countdown.style.display = "block";
+      let count = 3;
+      countdown.innerText = count;
+      const interval = setInterval(() => {
+        count--;
+        if (count === 0) {
+          clearInterval(interval);
+          countdown.style.display = "none";
+          callback();
+        } else {
           countdown.innerText = count;
-          if (count === 0) {
-            clearInterval(interval);
-            countdown.style.display = "none";
-            current++;
-            card.innerText = current + 1;
-            card.style.display = "flex";
-            reveal.style.display = "none";
-            isScratched = false;
+        }
+      }, 700);
+    }
+
+    function triggerConfetti() {
+      if (confettiStarted) return;
+      confettiStarted = true;
+      const audio = new Audio("https://freesound.org/data/previews/331/331912_3248244-lq.mp3");
+      audio.play();
+      for (let i = 0; i < 100; i++) {
+        const confetti = document.createElement("div");
+        confetti.textContent = "🎉";
+        confetti.style.position = "fixed";
+        confetti.style.left = Math.random() * window.innerWidth + "px";
+        confetti.style.top = "-20px";
+        confetti.style.fontSize = "2em";
+        confetti.style.zIndex = "999";
+        document.body.appendChild(confetti);
+        let pos = 0;
+        const fall = setInterval(() => {
+          pos += 3;
+          confetti.style.top = pos + "px";
+          if (pos > window.innerHeight) {
+            clearInterval(fall);
+            confetti.remove();
           }
-        }, 1000);
+        }, 16);
       }
     }
 
-    card.addEventListener('click', triggerScratch);
-    window.addEventListener('resize', resizeCanvas);
+    let isDrawing = false;
+
+    canvas.addEventListener("mousedown", () => isDrawing = true);
+    canvas.addEventListener("mouseup", () => isDrawing = false);
+    canvas.addEventListener("mousemove", e => {
+      if (!isDrawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      ctx.globalCompositeOperation = "destination-out";
+      ctx.beginPath();
+      ctx.arc(x, y, 20, 0, Math.PI * 2);
+      ctx.fill();
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let cleared = 0;
+      for (let i = 3; i < imageData.length; i += 4) {
+        if (imageData[i] === 0) cleared++;
+      }
+      if (!scratched && cleared / (canvas.width * canvas.height) > 0.6) {
+        scratched = true;
+        if (current === 2 && textSpan.innerText.includes("girl")) {
+          triggerConfetti();
+        }
+        if (current < 2) {
+          showCountdown(() => {
+            current++;
+            setCard(current);
+          });
+        }
+      }
+    });
+
+    setCard(current);
   </script>
 </body>
 </html>
