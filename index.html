@@ -11,6 +11,7 @@
       text-align: center;
       padding: 2em;
       color: #d63384;
+      overflow-x: hidden;
     }
     h1 {
       font-size: 2.5em;
@@ -33,15 +34,6 @@
       height: 250px;
       margin-bottom: 1em;
     }
-    .number-overlay {
-      position: absolute;
-      top: 10px;
-      left: 15px;
-      font-size: 28px;
-      font-weight: bold;
-      color: #fff;
-      z-index: 2;
-    }
     .reveal-text {
       position: absolute;
       width: 100%;
@@ -51,20 +43,31 @@
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: 28px;
+      font-size: 48px;
       font-weight: bold;
-      color: #d63384;
-      background: #fff8f9;
-      z-index: 0;
+      color: black;
+      background: #ccc;
+      z-index: 2;
     }
     canvas {
       position: absolute;
       top: 0;
       left: 0;
-      z-index: 1;
+      z-index: 3;
       cursor: crosshair;
       border-radius: 12px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    #overlay-countdown {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 5em;
+      font-weight: bold;
+      color: teal;
+      z-index: 1000;
+      display: none;
     }
   </style>
 </head>
@@ -74,12 +77,12 @@
 
   <div class="card-container">
     <div class="scratch-card">
-      <div class="number-overlay" id="number-display">1</div>
-      <div class="reveal-text" id="text-display">What am I?</div>
+      <div class="reveal-text" id="text-display">1</div>
       <canvas id="scratchCanvas" width="400" height="250"></canvas>
     </div>
   </div>
 
+  <div id="overlay-countdown"></div>
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;"></canvas>
   <audio id="trumpet-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8a2db92c3a.mp3?filename=trumpet-fanfare-8316.mp3"></audio>
 
@@ -87,61 +90,81 @@
     const canvas = document.getElementById('scratchCanvas');
     const ctx = canvas.getContext('2d');
     const textDisplay = document.getElementById('text-display');
-    const numberDisplay = document.getElementById('number-display');
+    const overlayCountdown = document.getElementById('overlay-countdown');
     const trumpet = document.getElementById('trumpet-sound');
 
     const messages = [
+      "1",
+      "2",
+      "3"
+    ];
+
+    const reveals = [
       "What am I?",
       "Wait for it...",
-      "I'm a girl! 🎀"
+      "<span style='color:#d63384;'>I'm a girl! 🎀</span>"
     ];
 
     let currentIndex = 0;
+    let revealed = false;
 
     function setupCard(index) {
-      textDisplay.innerText = messages[index];
-      numberDisplay.innerText = index + 1;
+      textDisplay.style.color = 'black';
+      textDisplay.innerHTML = messages[index];
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#ccc';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      revealed = false;
+    }
+
+    function showCountdownAndNextCard() {
+      let count = 3;
+      overlayCountdown.style.display = 'block';
+      overlayCountdown.innerText = count;
+      const interval = setInterval(() => {
+        count--;
+        if (count > 0) {
+          overlayCountdown.innerText = count;
+        } else {
+          clearInterval(interval);
+          overlayCountdown.style.display = 'none';
+          currentIndex++;
+          setupCard(currentIndex);
+        }
+      }, 1000);
     }
 
     function checkScratchProgress() {
+      if (revealed) return;
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
       let cleared = 0;
-
       for (let i = 0; i < pixels.data.length; i += 4) {
         if (pixels.data[i + 3] < 128) cleared++;
       }
-
       const percentCleared = cleared / (canvas.width * canvas.height) * 100;
-
       if (percentCleared > 80) {
-        if (currentIndex < messages.length - 1) {
-          currentIndex++;
-          setupCard(currentIndex);
-        } else {
+        revealed = true;
+        textDisplay.innerHTML = reveals[currentIndex];
+        if (currentIndex === messages.length - 1) {
           launchConfetti();
           trumpet.play();
+        } else {
+          setTimeout(showCountdownAndNextCard, 2000);
         }
       }
     }
 
     let isDrawing = false;
-
     canvas.addEventListener('mousedown', (e) => {
       isDrawing = true;
       scratch(e.offsetX, e.offsetY);
     });
-
     canvas.addEventListener('mousemove', (e) => {
       if (isDrawing) scratch(e.offsetX, e.offsetY);
     });
-
     canvas.addEventListener('mouseup', () => {
       isDrawing = false;
     });
-
     canvas.addEventListener('mouseleave', () => {
       isDrawing = false;
     });
