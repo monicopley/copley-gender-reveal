@@ -106,7 +106,20 @@
 
     function setupCard(index) {
       textDisplay.style.color = 'black';
-      textDisplay.innerHTML = messages[index];
+      textDisplay.innerHTML = '';
+      const numberOverlay = document.createElement('div');
+      numberOverlay.textContent = messages[index];
+      numberOverlay.style.position = 'absolute';
+      numberOverlay.style.top = '50%';
+      numberOverlay.style.left = '50%';
+      numberOverlay.style.transform = 'translate(-50%, -50%)';
+      numberOverlay.style.fontSize = '64px';
+      numberOverlay.style.fontWeight = 'bold';
+      numberOverlay.style.color = 'black';
+      numberOverlay.style.zIndex = '1';
+      numberOverlay.id = 'card-number';
+      document.querySelector('.scratch-card').appendChild(numberOverlay);
+
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#ccc';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -141,6 +154,9 @@
       if (percentCleared > 80) {
         revealed = true;
         textDisplay.innerHTML = reveals[currentIndex];
+        const existingNumber = document.getElementById('card-number');
+        if (existingNumber) existingNumber.remove();
+
         if (currentIndex === messages.length - 1) {
           launchConfetti();
           trumpet.play();
