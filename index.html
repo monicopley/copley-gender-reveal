@@ -99,7 +99,7 @@
       },
       {
         numberText: "2",
-        revealText: "Wait for it",
+        revealText: "Wait for it...",
         ellipsesText: "\u00A0...", // non-breaking space then ellipses
         revealColor: "maroon",
         ellipsesColor: "lightblue"
@@ -277,8 +277,8 @@
       // Debug: Uncomment the next line to log the percentage.
       // console.log("Current state:", currentStateIndex, "Percent cleared:", percentCleared);
   
-      // Use 15% threshold for final card (state index 2); 60% for others.
-      const threshold = (currentStateIndex === 2) ? 15 : 60;
+      // Use 30% threshold for final card (state index 2); 60% for others.
+      const threshold = (currentStateIndex === 2) ? 30 : 60;
       if (percentCleared >= threshold) {
         cardCleared = true;
         overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
