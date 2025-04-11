@@ -45,7 +45,7 @@
       align-items: center;
       font-size: 48px;
       font-weight: bold;
-      color: black;
+      color: teal;
       background: #ccc;
       z-index: 2;
     }
@@ -93,16 +93,12 @@
     const overlayCountdown = document.getElementById('overlay-countdown');
     const trumpet = document.getElementById('trumpet-sound');
 
-    const messages = [
-      "1",
-      "2",
-      "3"
-    ];
+    const messages = ["1", "2", "3"];
 
     const reveals = [
-      "What am I?",
-      "Wait for it...",
-      "<span style='color:#d63384;'>I'm a girl! 🎀</span>"
+      "<span style='color:teal;'>What am I?</span>",
+      "<span style='color:teal;'>Wait for it...</span>",
+      "<span style='color:teal;'>I'm a</span> <span style='color:#d63384;'>girl!</span> 🎀"
     ];
 
     let currentIndex = 0;
@@ -162,12 +158,8 @@
     canvas.addEventListener('mousemove', (e) => {
       if (isDrawing) scratch(e.offsetX, e.offsetY);
     });
-    canvas.addEventListener('mouseup', () => {
-      isDrawing = false;
-    });
-    canvas.addEventListener('mouseleave', () => {
-      isDrawing = false;
-    });
+    canvas.addEventListener('mouseup', () => { isDrawing = false; });
+    canvas.addEventListener('mouseleave', () => { isDrawing = false; });
 
     function scratch(x, y) {
       ctx.globalCompositeOperation = 'destination-out';
