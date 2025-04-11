@@ -33,6 +33,15 @@
       height: 250px;
       margin-bottom: 1em;
     }
+    .number-overlay {
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #fff;
+      z-index: 2;
+    }
     .reveal-text {
       position: absolute;
       width: 100%;
@@ -65,26 +74,33 @@
 
   <div class="card-container">
     <div class="scratch-card">
-      <div class="reveal-text" id="text-display">1. What am I?</div>
+      <div class="number-overlay" id="number-display">1</div>
+      <div class="reveal-text" id="text-display">What am I?</div>
       <canvas id="scratchCanvas" width="400" height="250"></canvas>
     </div>
   </div>
 
   <canvas id="confetti-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;"></canvas>
+  <audio id="trumpet-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_8a2db92c3a.mp3?filename=trumpet-fanfare-8316.mp3"></audio>
 
   <script>
     const canvas = document.getElementById('scratchCanvas');
     const ctx = canvas.getContext('2d');
     const textDisplay = document.getElementById('text-display');
+    const numberDisplay = document.getElementById('number-display');
+    const trumpet = document.getElementById('trumpet-sound');
+
     const messages = [
-      "1. What am I?",
-      "2. Wait for it...",
-      "3. I'm a girl! 🎀"
+      "What am I?",
+      "Wait for it...",
+      "I'm a girl! 🎀"
     ];
+
     let currentIndex = 0;
 
     function setupCard(index) {
       textDisplay.innerText = messages[index];
+      numberDisplay.innerText = index + 1;
       ctx.globalCompositeOperation = 'source-over';
       ctx.fillStyle = '#ccc';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -93,16 +109,20 @@
     function checkScratchProgress() {
       const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
       let cleared = 0;
+
       for (let i = 0; i < pixels.data.length; i += 4) {
         if (pixels.data[i + 3] < 128) cleared++;
       }
+
       const percentCleared = cleared / (canvas.width * canvas.height) * 100;
+
       if (percentCleared > 80) {
         if (currentIndex < messages.length - 1) {
           currentIndex++;
           setupCard(currentIndex);
         } else {
           launchConfetti();
+          trumpet.play();
         }
       }
     }
