@@ -155,9 +155,11 @@
       if (percentCleared > 80) {
         revealed = true;
         textDisplay.innerHTML = reveals[currentIndex];
+        const existingNumber = document.getElementById('card-number');
+        if (existingNumber) existingNumber.remove();
         const numberOverlay = document.querySelector('.number-overlay');
         if (numberOverlay) numberOverlay.remove();
-        if (currentIndex === messages.length - 1) {
+        if (textDisplay.innerText.toLowerCase().includes('girl')) {
           launchConfetti();
           trumpet.play();
         } else {
@@ -229,7 +231,7 @@
       draw();
     }
 
-    window.addEventListener('DOMContentLoaded', () => setupCard(currentIndex));
+    setupCard(currentIndex);
   </script>
 </body>
 </html>
