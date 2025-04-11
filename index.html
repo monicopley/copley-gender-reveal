@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,7 +10,7 @@
       font-family: 'Georgia', serif;
       text-align: center;
       padding: 2em;
-      color: #063c39;
+      color: #d63384;
       overflow-x: hidden;
     }
     h1 {
@@ -20,38 +19,31 @@
     }
     .instruction {
       font-size: 1.5em;
-      color: #d63384;
       margin-bottom: 2em;
-    }
-    .card-container {
-      display: flex;
-      justify-content: center;
     }
     .scratch-card {
       position: relative;
       width: 400px;
       height: 250px;
+      margin: 0 auto 2em;
       background: #ccc;
-      margin: auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
       font-size: 2em;
+      font-weight: bold;
+      color: black;
       display: flex;
-      align-items: center;
       justify-content: center;
-    }
-    .scratch-overlay {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: #ccc;
-      z-index: 2;
+      align-items: center;
     }
     .reveal-text {
-      z-index: 1;
+      display: none;
+      font-size: 2em;
       font-weight: bold;
     }
-    .hidden {
+    .countdown {
+      font-size: 4em;
       display: none;
+      color: teal;
+      margin-bottom: 1em;
     }
     .confetti {
       position: fixed;
@@ -60,76 +52,78 @@
       top: 0;
       left: 0;
       pointer-events: none;
-      z-index: 999;
+      z-index: 1000;
     }
   </style>
 </head>
 <body>
   <h1>Welcome to Our Gender Reveal!</h1>
-  <p class="instruction">Scratch the card to reveal the surprise!</p>
-  <div class="card-container">
-    <canvas id="scratchCanvas" class="scratch-card"></canvas>
-    <div id="revealText" class="reveal-text hidden">
-      I'm a <span style="color:pink">girl</span>! 🎀
-    </div>
-  </div>
-  <div id="confetti" class="confetti hidden">🎉🎉🎉</div>
-  <audio id="trumpetSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3"></audio>
-
+  <div class="instruction">Scratch the card to reveal the surprise!</div>
+  <div class="countdown" id="countdown">3</div>
+  <div class="scratch-card" id="card">1</div>
+  <div class="reveal-text" id="reveal"></div>
+  <canvas class="confetti" id="confetti"></canvas>
+  <audio id="trumpet" src="https://upload.wikimedia.org/wikipedia/commons/1/15/Trumpet.mp3"></audio>
   <script>
-    const canvas = document.getElementById('scratchCanvas');
-    const ctx = canvas.getContext('2d');
-    const revealText = document.getElementById('revealText');
-    const confetti = document.getElementById('confetti');
-    const trumpet = document.getElementById('trumpetSound');
+    let card = document.getElementById('card');
+    let reveal = document.getElementById('reveal');
+    let countdown = document.getElementById('countdown');
+    let trumpet = document.getElementById('trumpet');
+    let confettiCanvas = document.getElementById('confetti');
+    let ctx = confettiCanvas.getContext('2d');
+    let phrases = ["What am I?", "Wait for it...", "I'm a <span style='color:pink'>girl</span>!"];
+    let current = 0;
+    let isScratched = false;
 
-    canvas.width = 400;
-    canvas.height = 250;
-    ctx.fillStyle = '#ccc';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.font = 'bold 60px Georgia';
-    ctx.fillStyle = 'black';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText('1', canvas.width / 2, canvas.height / 2);
-
-    let isDrawing = false;
-
-    function scratch(e) {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.beginPath();
-      ctx.arc(x, y, 25, 0, Math.PI * 2, false);
-      ctx.fill();
+    function resizeCanvas() {
+      confettiCanvas.width = window.innerWidth;
+      confettiCanvas.height = window.innerHeight;
     }
 
-    canvas.addEventListener('mousedown', () => isDrawing = true);
-    canvas.addEventListener('mouseup', () => isDrawing = false);
-    canvas.addEventListener('mousemove', (e) => {
-      if (!isDrawing) return;
-      scratch(e);
-      checkReveal();
-    });
-
-    function checkReveal() {
-      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      let cleared = 0;
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        if (imgData.data[i + 3] < 128) cleared++;
+    function startConfetti() {
+      resizeCanvas();
+      for (let i = 0; i < 100; i++) {
+        ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 70%)`;
+        ctx.beginPath();
+        ctx.arc(Math.random() * confettiCanvas.width, Math.random() * confettiCanvas.height, 5, 0, 2 * Math.PI);
+        ctx.fill();
       }
-      const percent = cleared / (canvas.width * canvas.height) * 100;
-      if (percent > 80) reveal();
     }
 
-    function reveal() {
-      canvas.classList.add('hidden');
-      revealText.classList.remove('hidden');
-      confetti.classList.remove('hidden');
-      trumpet.play();
+    function triggerScratch() {
+      if (isScratched) return;
+      isScratched = true;
+      card.style.display = "none";
+      reveal.innerHTML = phrases[current];
+      reveal.style.display = "block";
+
+      if (current === 2) {
+        startConfetti();
+        trumpet.play();
+      }
+
+      if (current < phrases.length - 1) {
+        let count = 3;
+        countdown.innerText = count;
+        countdown.style.display = "block";
+        let interval = setInterval(() => {
+          count--;
+          countdown.innerText = count;
+          if (count === 0) {
+            clearInterval(interval);
+            countdown.style.display = "none";
+            current++;
+            card.innerText = current + 1;
+            card.style.display = "flex";
+            reveal.style.display = "none";
+            isScratched = false;
+          }
+        }, 1000);
+      }
     }
+
+    card.addEventListener('click', triggerScratch);
+    window.addEventListener('resize', resizeCanvas);
   </script>
 </body>
 </html>
