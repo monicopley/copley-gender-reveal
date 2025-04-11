@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to Our Gender Reveal!</title>
+  <style>
+    /* Page-wide styling */
+    body {
+      background-color: #f0f8ff; /* very light blue, almost white */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      font-family: sans-serif;
+    }
+    h1 {
+      color: pink; /* header now pink */
+      font-size: 3rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    h2 {
+      color: #555555; /* dark gray subheader */
+      font-size: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    /* Scratch card container */
+    #scratchCardContainer {
+      margin: 0 auto;
+      position: relative;
+      width: 300px;
+      height: 300px;
+      border: 2px solid #000;
+    }
+    /* Underlying canvas – shows beige background with reveal text */
+    #underCanvas {
+      position: relative;
+      z-index: 1;
+    }
+    /* Overlay canvas – the light grey layer with the big number */
+    #overlayCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
+      cursor: crosshair;
+    }
+    /* Countdown styling */
+    .countdown {
+      font-size: 6rem; /* large countdown numbers */
+      color: red;
+      display: none;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Welcome to Our Gender Reveal!</h1>
+  <h2>Scratch the card to reveal the surprise!</h2>
+
+  <div id="scratchCardContainer">
+    <canvas id="underCanvas" width="300" height="300"></canvas>
+    <canvas id="overlayCanvas" width="300" height="300"></canvas>
+  </div>
+
+  <div class="countdown" id="countdown"></div>
+
+  <!-- Trumpet sound (ensure trumpet.mp3 is in the same folder) -->
+  <audio id="trumpetSound" src="trumpet.mp3"></audio>
+
+  <!-- Confetti library -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.4.0/dist/confetti.browser.min.js"></script>
+
+  <script>
+    /*
+      This version uses three card states:
+      
+      Card #3 (state index 0):
+        - Overlay: displays "3".
+        - Underneath: displays "What am I?" in maroon on a beige background.
+        - When 70% is scratched, a 3-2-1 countdown is triggered, then switches to Card #2.
+      
+      Card #2 (state index 1):
+        - Overlay: displays "2".
+        - Underneath: displays "Wait for it …" where "Wait for it" is in maroon and the ellipses are in light blue.
+        - When 70% is scratched, a 3-2-1 countdown is triggered, then switches to Card #1.
+      
+      Card #1 (state index 2):
+        - Overlay: displays "1".
+        - Underneath: displays "I'm a GIRL!" in pink.
+        - When **5%** is scratched (final card threshold), immediately launch confetti and play trumpet (no countdown).
+      
+      Common settings:
+        - Under-canvas background is beige (#F5F5DC).
+        - Scratch stroke (line width) is 50.
+        - Underlying text is drawn in bold 40px sans-serif.
+        - Overlay number is drawn in bold 120px sans-serif.
+    */
+
+    // Define card states.
+    const states = [
+      {
+        numberText: "3",
+        revealText: "What am I?",
+        revealColor: "maroon"  // For Card #3.
+      },
+      {
+        numberText: "2",
+        revealText: "Wait for it",      // For Card #2.
+        ellipsesText: "\u00A0...",      // Added non-breaking space before ellipses.
+        revealColor: "maroon",
+        ellipsesColor: "lightblue"
+      },
+      {
+        numberText: "1",
+        revealText: "I'm a GIRL!",
+        revealColor: "pink"            // For final card.
+      }
+    ];
+
+    // Get DOM elements and contexts.
+    const underCanvas = document.getElementById("underCanvas");
+    const underCtx = underCanvas.getContext("2d");
+    const overlayCanvas = document.getElementById("overlayCanvas");
+    const overlayCtx = overlayCanvas.getContext("2d");
+    const countdownEl = document.getElementById("countdown");
+    const trumpetSound = document.getElementById("trumpetSound");
+    const canvasWidth = underCanvas.width;
+    const canvasHeight = underCanvas.height;
+
+    // State variables.
+    let currentStateIndex = 0;
+    let isScratching = false;
+    let lastX = 0;
+    let lastY = 0;
+    let cardCleared = false; // To ensure each card's action is triggered only once.
+
+    // Initialize the first card (Card #3).
+    initCard(0);
+
+    // --- Mouse Events ---
+    overlayCanvas.addEventListener("mousedown", (e) => {
+      isScratching = true;
+      lastX = e.offsetX;
+      lastY = e.offsetY;
+      cardCleared = false;
+      e.preventDefault();
+    });
+    overlayCanvas.addEventListener("mousemove", (e) => {
+      if (!isScratching) return;
+      scratchLine(e.offsetX, e.offsetY);
+      e.preventDefault();
+    });
+    overlayCanvas.addEventListener("mouseup", (e) => {
+      isScratching = false;
+      overlayCtx.globalCompositeOperation = "source-over";
+      checkScratchProgress();
+      e.preventDefault();
+    });
+    overlayCanvas.addEventListener("mouseleave", () => {
+      isScratching = false;
+      // Also check threshold when mouse leaves.
+      checkScratchProgress();
+    });
+
+    // --- Touch Events ---
+    overlayCanvas.addEventListener("touchstart", (e) => {
+      isScratching = true;
+      const rect = overlayCanvas.getBoundingClientRect();
+      lastX = e.touches[0].clientX - rect.left;
+      lastY = e.touches[0].clientY - rect.top;
+      cardCleared = false;
+      e.preventDefault();
+    }, { passive: false });
+    overlayCanvas.addEventListener("touchmove", (e) => {
+      if (!isScratching) return;
+      e.preventDefault();
+      const rect = overlayCanvas.getBoundingClientRect();
+      const x = e.touches[0].clientX - rect.left;
+      const y = e.touches[0].clientY - rect.top;
+      scratchLine(x, y);
+    }, { passive: false });
+    overlayCanvas.addEventListener("touchend", (e) => {
+      isScratching = false;
+      overlayCtx.globalCompositeOperation = "source-over";
+      checkScratchProgress();
+      e.preventDefault();
+    }, { passive: false });
+
+    /**
+     * Initialize a card for the given state index.
+     */
+    function initCard(stateIndex) {
+      currentStateIndex = stateIndex;
+      cardCleared = false;
+      underCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+      overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+      drawUnderCanvas(states[stateIndex]);
+      drawOverlay(states[stateIndex]);
+    }
+
+    /**
+     * Draw the underCanvas:
+     * - Fill with beige (#F5F5DC).
+     * - Draw the reveal text (bold 40px sans-serif).
+     * For Card #2, draw "Wait for it" in maroon and the ellipses in light blue.
+     */
+    function drawUnderCanvas(state) {
+      underCtx.fillStyle = "#F5F5DC"; // Beige background.
+      underCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+      underCtx.textAlign = "center";
+      underCtx.textBaseline = "middle";
+      underCtx.font = "bold 40px sans-serif";
+
+      if (currentStateIndex === 1) {
+        underCtx.fillStyle = state.revealColor;
+        const mainText = state.revealText;
+        const measure = underCtx.measureText(mainText);
+        const offsetX = (canvasWidth / 2) - 10;
+        underCtx.fillText(mainText, offsetX, canvasHeight / 2);
+        underCtx.fillStyle = state.ellipsesColor;
+        // Draw the ellipses with the added non-breaking space.
+        underCtx.fillText(state.ellipsesText, offsetX + measure.width, canvasHeight / 2);
+      } else {
+        underCtx.fillStyle = state.revealColor;
+        underCtx.fillText(state.revealText, canvasWidth / 2, canvasHeight / 2);
+      }
+    }
+
+    /**
+     * Draw the overlay-canvas:
+     * - Fill with light grey.
+     * - Draw the large number using bold 120px sans-serif.
+     */
+    function drawOverlay(state) {
+      overlayCtx.globalCompositeOperation = "source-over";
+      overlayCtx.fillStyle = "rgba(211,211,211,1)"; // Light grey, fully opaque.
+      overlayCtx.fillRect(0, 0, canvasWidth, canvasHeight);
+      overlayCtx.textAlign = "center";
+      overlayCtx.textBaseline = "middle";
+      overlayCtx.font = "bold 120px sans-serif";
+      overlayCtx.fillStyle = "black";
+      overlayCtx.fillText(state.numberText, canvasWidth / 2, canvasHeight / 2);
+    }
+
+    /**
+     * Scratch a line from (lastX,lastY) to (x,y) using destination-out.
+     * Uses a line width of 50.
+     * After each stroke, check the scratch progress.
+     */
+    function scratchLine(x, y) {
+      overlayCtx.globalCompositeOperation = "destination-out";
+      overlayCtx.lineWidth = 50;
+      overlayCtx.lineCap = "round";
+      overlayCtx.beginPath();
+      overlayCtx.moveTo(lastX, lastY);
+      overlayCtx.lineTo(x, y);
+      overlayCtx.stroke();
+      overlayCtx.closePath();
+      lastX = x;
+      lastY = y;
+      setTimeout(checkScratchProgress, 200);
+    }
+
+    /**
+     * Check the percentage of the overlay that has been cleared.
+     * For Card #3 and Card #2, the threshold is 70%.
+     * For the final card (Card #1), the threshold is 5%.
+     * When the threshold is reached:
+     * - For non-final cards, clear the overlay and start a 3-2-1 countdown.
+     * - For the final card, immediately clear the overlay and trigger confetti and trumpet.
+     */
+    function checkScratchProgress() {
+      if (cardCleared) return;
+      const imgData = overlayCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+      let transparentPixels = 0;
+      for (let i = 3; i < imgData.length; i += 4) {
+        if (imgData[i] === 0) transparentPixels++;
+      }
+      const totalPixels = canvasWidth * canvasHeight;
+      const percentCleared = (transparentPixels / totalPixels) * 100;
+      // Use 5% threshold for final card; 70% for others.
+      const threshold = (currentStateIndex === states.length - 1) ? 5 : 70;
+      if (percentCleared >= threshold) {
+        cardCleared = true;
+        overlayCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        if (currentStateIndex === states.length - 1) {
+          // Final card: immediately launch confetti and play trumpet.
+          launchConfetti();
+          trumpetSound.play();
+        } else {
+          // For Card #3 and Card #2, start countdown after a 500ms delay.
+          setTimeout(startCountdownAndNext, 500);
+        }
+      }
+    }
+
+    /**
+     * Start a 3-2-1 countdown then switch to the next card.
+     */
+    function startCountdownAndNext() {
+      countdownEl.style.display = "block";
+      let counter = 3;
+      countdownEl.innerText = counter;
+      const intervalId = setInterval(() => {
+        counter--;
+        countdownEl.innerText = counter;
+        if (counter === 0) {
+          clearInterval(intervalId);
+          countdownEl.style.display = "none";
+          initCard(currentStateIndex + 1);
+        }
+      }, 1000);
+    }
+
+    /**
+     * Launch confetti for about 5 seconds.
+     */
+    function launchConfetti() {
+      const endTime = Date.now() + 5000;
+      (function frame() {
+        confetti({
+          particleCount: 5,
+          angle: 60,
+          spread: 55,
+          origin: { x: 0 }
+        });
+        confetti({
+          particleCount: 5,
+          angle: 120,
+          spread: 55,
+          origin: { x: 1 }
+        });
+        if (Date.now() < endTime) {
+          requestAnimationFrame(frame);
+        }
+      })();
+    }
+  </script>
+</body>
+</html>
